@@ -125,9 +125,28 @@ Commit and push to `master`. GitHub Pages rebuilds in a minute or two.
 - **Leaders:** use Discord. Huddle tells them it's for coaches for now.
 - Other people's names show up where the app needs them (an interviewer's name, say), but their email and phone don't.
 
+## Staff Manage tab (for Kim and the pastors)
+
+Staff make every people change in one tab, **Staff Manage**, that works like the old Groups Overview sheet but with dropdowns. A script copies each edit into People and Assignments (what the app reads) within a few seconds and writes it to the **Change Log** tab. When the app changes someone (say, after an interview), their Staff Manage row is rewritten to match.
+
+**Turn it on (once):**
+
+1. In Apps Script, add a file: **+** next to Files → **Script** → name it `StaffManage`. Paste in `apps-script/StaffManage.gs`. Also paste the latest `Code.gs`.
+2. Pick **setupStaffManage** and click **Run**. It adds three People columns, builds the tab from today's data, protects the raw tabs so only you can edit them, and starts two triggers: one on every edit, and a 2am tidy-up that re-sorts the tab into groups.
+3. Deploy → Manage deployments → pencil → **New version** → Deploy.
+4. Share the sheet with staff and pastors as **Editor**. They can edit Staff Manage and the Rooted Seasons column in Staff Lists; everything else is locked.
+
+**How staff use it:**
+
+- **Move a leader:** pick a new name in **Coach / Senior Coach**. The old assignment ends, a new one starts, and the group gets a "Leader moved" post.
+- **Add someone:** type a new row at the bottom: First, Last, Role, Coach / Senior Coach (Email and Phone if known). The ID fills in by itself. Senior coaches also need a Ministry.
+- **Someone steps down:** set **Status** to *No longer leading*. Don't delete rows.
+- **Check column:** ✓ means saved. ⚠ explains what to fix; nothing is saved until it's fixed.
+- **Rooted Season:** pick the season they came through. If it wasn't a Rooted season, pick *Other* and say how in Notes. Add new seasons in the Staff Lists tab, column A.
+
 ## Adding people
 
-Add a row to **People** (Sign-in Email is the Google account they sign in with, if it's different from their contact email). For a leader, add an **Assignments** row pointing to their coach. For a coach, set **Senior Coach**. For a new huddle, add a **Spaces** row with Kind = Huddle and For Person = the coach.
+Use the Staff Manage tab (above). The old way, if the tab isn't set up yet: add a row to **People** (Sign-in Email is the Google account they sign in with, if it's different from their contact email). For a leader, add an **Assignments** row pointing to their coach. For a coach, set **Senior Coach**. For a new huddle, add a **Spaces** row with Kind = Huddle and For Person = the coach.
 
 ## Auto posts to Discord
 

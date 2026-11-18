@@ -24,7 +24,8 @@ var TABLES = {
     ['phone', 'Phone', 's'], ['role', 'Role', 's'], ['ministry', 'Ministry', 's'], ['status', 'Status', 's'],
     ['seniorCoach', 'Senior Coach', 's'], ['isInterviewer', 'Is Interviewer', 'b'], ['canReview', 'Can Review Interviews', 'b'],
     ['sLevel', 'S Level', 'n'], ['lLevel', 'L Level', 'n'], ['rhythmWeeks', 'Check-in Rhythm (weeks)', 'n'],
-    ['staffNotes', 'Staff Notes', 's'], ['created', 'Created Date', 'd'], ['discord', 'Discord', 's'], ['signInEmail', 'Sign-in Email', 's']] },
+    ['staffNotes', 'Staff Notes', 's'], ['created', 'Created Date', 'd'], ['discord', 'Discord', 's'], ['signInEmail', 'Sign-in Email', 's'],
+    ['rootedSeason', 'Rooted Season', 's'], ['rootedFac', 'Rooted Facilitator', 's'], ['needsDiscord', 'Needs Discord Setup', 'b']] },
   ministries: { tab: 'Ministries', fields: [['id', 'MinistryID', 's'], ['name', 'Name', 's']] },
   groups: { tab: 'Groups', fields: [
     ['id', 'GroupID', 's'], ['ministry', 'Ministry', 's'], ['leader', 'Leader', 's'], ['coLeader', 'Co-Leader', 's'],
@@ -316,6 +317,7 @@ function save_(ctx, changes) {
   lock.waitLock(20000);
   try {
     var posted = [];
+    var touched = []; // people whose Staff Manage row needs rewriting (see StaffManage.gs)
     Object.keys(changes).forEach(function (table) {
       if (WRITABLE.indexOf(table) < 0) throw new Error('Huddle cannot change ' + table + ' from the app.');
       var ch = changes[table] || {};
@@ -334,15 +336,22 @@ function save_(ctx, changes) {
         if (table === 'interviews') writeInterview_(row);
         else upsertRow_(table, row);
         if (table === 'assignments' && !before && !row.end) posted.push(row);
+        if (table === 'people') touched.push(row.id);
+        if (table === 'assignments') touched.push(row.leader || (before && before.leader));
       });
       (ch.remove || []).forEach(function (id) {
         var before = existing[id];
         if (!before) return;
         if (!canWrite_(ctx, table, before)) throw new Error('You can’t remove that record.');
         removeRow_(table, id);
+        if (table === 'assignments') touched.push(before.leader);
       });
     });
     posted.forEach(function (a) { announceAssignment_(a); });
+    if (touched.length && typeof smReflect_ === 'function') {
+      try { smReflect_(touched.filter(function (x, i) { return x && touched.indexOf(x) === i; })); }
+      catch (err) { Logger.log('Staff Manage update failed: ' + err); } // never block the app's save
+    }
     return { ok: true };
   } finally {
     lock.releaseLock();
